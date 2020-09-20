@@ -6,44 +6,44 @@ class Concept():
     extent: set = dataclasses.field(default_factory=set)
     intent: set = dataclasses.field(default_factory=set)
 
+class InClose(object):
+    def __init__(self):
+        self.rnew = 0
+        self.concepts = list()
 
-def IsCannonical(r, y, rnew):
-    global concepts
-    for col in reversed(range(y)):
-        if col in concepts[r].intent:
-            continue
-        else:
-            if not concepts[rnew].extent.difference(set(np.where(context[:,col])[0])):
-                return False
-    return True
-
-def InClose(r, y, min_extent=-1):
-    global rnew, concepts
-    rnew = rnew + 1
-    concepts[rnew] = Concept()
-    for j in range(y, len(context[0])):
-        concepts[rnew].extent = set()
-        for i in concepts[r].extent:
-            if context[i,j]:
-                concepts[rnew].extent.add(i)
-        # Only include concepts with extent larger than min_extent (default include all concepts)
-        if len(concepts[rnew].extent) > min_extent:
-            if concepts[rnew].extent == concepts[r].extent:
-                concepts[r].intent.add(j)
+    def _is_cannonical(self, r, y):
+        for col in reversed(range(y)):
+            if col in self.concepts[r].intent:
+                continue
             else:
-                if IsCannonical(r, j, rnew):
-                    concepts[rnew].intent = concepts[r].intent.union({j})
-                    InClose(rnew, j+1)
+                if not self.concepts[self.rnew].extent.difference(set(np.where(self.context[:,col])[0])):
+                    return False
+        return True
 
-def do_InClose(context):
-    global rnew, concepts
-    rnew = 0
-    concepts = {0: Concept(extent=set([c for c in range(len(context))]))}
-    InClose(0, 0)
-    # TODO: review deletion rule as it might result in actual concepts being deleted?
-    # delete last concept as it will be unfinished
-    del concepts[max(concepts.keys())]
-    return list(concepts.values())
+    def _in_close(self, r, y, min_extent=-1):
+        self.rnew += 1
+        self.concepts[self.rnew] = Concept()
+        for j in range(y, len(self.context[0])):
+            self.concepts[self.rnew].extent = set()
+            for i in self.concepts[r].extent:
+                if self.context[i,j]:
+                    self.concepts[self.rnew].extent.add(i)
+            # Only include concepts with extent larger than min_extent (default include all concepts)
+            if len(self.concepts[self.rnew].extent) > min_extent:
+                if self.concepts[self.rnew].extent == self.concepts[r].extent:
+                    self.concepts[r].intent.add(j)
+                else:
+                    if self._is_cannonical(r, j):
+                        self.concepts[self.rnew].intent = self.concepts[r].intent.union({j})
+                        self._in_close(self.rnew, j + 1)
+
+    def run(self, context):
+        self.rnew = 0
+        self.context = context
+        self.concepts = {0: Concept(extent=set([c for c in range(len(context))]))}
+        self._in_close(0, 0)
+        del self.concepts[max(self.concepts.keys())]
+        return list(self.concepts.values())
 
 if __name__ == '__main__':
 
@@ -72,5 +72,5 @@ if __name__ == '__main__':
     for rel in i:
         context[rel[0], rel[1]] = True
 
-    concepts = do_InClose(context)
+    concepts = InClose().run(context)
     assert not [c for c in expected if c not in concepts] and not [c for c in concepts if c not in expected]
