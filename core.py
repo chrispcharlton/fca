@@ -33,5 +33,15 @@ class Context():
         return Context(matrix)
 
 
+class BaseAlgorithm(object):
+    concepts: iter
+
+    def __iter__(self):
+        return (c for c in self.concepts)
+
+    def __getitem__(self, item):
+        return self.concepts[item]
+
+
 tuples = [{0,1,3}, {1,2}, {0,2,3,4}, {1,3}]
 c = Context.from_attribute_sets(tuples)
