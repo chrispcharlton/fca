@@ -9,14 +9,13 @@ import core
 
 class InClose(core.BaseAlgorithm):
     rnew = 0
-    concepts = dict()
+    concepts = [core.Concept()]
 
     def __init__(self, context):
         self.context = context
-        self.concepts[0] = core.Concept(extent=set(self.context.objs))
+        self.concepts[0].extent = set(self.context.objs)
         self._in_close(0, 0)
-        del self.concepts[max(self.concepts.keys())]
-        self.concepts = list(self.concepts.values())
+        del self.concepts[-1]
 
     def _is_cannonical(self, r, y):
         for col in reversed(range(y)):
@@ -29,7 +28,7 @@ class InClose(core.BaseAlgorithm):
 
     def _in_close(self, r, y):
         self.rnew += 1
-        self.concepts[self.rnew] = core.Concept()
+        self.concepts.append(core.Concept())
         for j in range(y, len(self.context.attrs)):
             self.concepts[self.rnew].extent = set()
             for i in self.concepts[r].extent:
@@ -47,7 +46,7 @@ class InCloseII(InClose):
     rnew = 1
 
     def __init__(self, context):
-        self.concepts[self.rnew] = core.Concept()
+        self.concepts.append(core.Concept())
         super().__init__(context)
 
     def _in_close(self, r, y):
@@ -67,7 +66,7 @@ class InCloseII(InClose):
                         rchildren.append(int(self.rnew))
                         self.concepts[self.rnew].intent = self.concepts[r].intent.union({j})
                         self.rnew += 1
-                        self.concepts[self.rnew] = core.Concept()
+                        self.concepts.append(core.Concept())
         for k in range(len(jchildren)):
             self._in_close(rchildren[k], jchildren[k] + 1)
 
