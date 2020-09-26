@@ -9,13 +9,22 @@ import core
 
 class InClose(core.BaseAlgorithm):
     rnew = 0
-    concepts = [core.Concept()]
+    initial_state = [core.Concept()]
 
     def __init__(self, context):
         self.context = context
-        self.concepts[0].extent = set(self.context.objs)
+        self.concepts = self.initial_state.copy()
+        self.concepts[0].extent = self.context.objs.keys()
         self._in_close(0, 0)
-        del self.concepts[-1]
+        if not self._is_closed(self.concepts[-1]):
+            del self.concepts[-1]
+
+    def _is_closed(self, concept):
+        for con2 in self.concepts:
+            if not concept.intent.difference(con2.intent):
+                if not concept.extent.difference(con2.extent):
+                    return False
+        return True
 
     def _is_cannonical(self, r, y):
         for col in reversed(range(y)):
@@ -44,9 +53,9 @@ class InClose(core.BaseAlgorithm):
 
 class InCloseII(InClose):
     rnew = 1
+    initial_state = [core.Concept(), core.Concept()]
 
     def __init__(self, context):
-        self.concepts.append(core.Concept())
         super().__init__(context)
 
     def _in_close(self, r, y):
