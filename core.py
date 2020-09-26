@@ -32,9 +32,18 @@ class Context():
             matrix[row, list(tuple)] = True
         return Context(matrix)
 
+    def attr_closure(self, attrs):
+        if isinstance(attrs, int):
+            attrs = {attrs}
+        return set([x for x in c.objs if attrs.issubset(c.objs[x])])
+
+    def obj_closure(self, objs):
+        if isinstance(objs, int):
+            objs = {objs}
+        return set([x for x in c.attrs if objs.issubset(c.attrs[x])])
+
 
 class BaseAlgorithm(object):
-    concepts: iter
 
     def __iter__(self):
         return (c for c in self.concepts)
