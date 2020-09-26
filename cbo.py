@@ -30,28 +30,27 @@ class FCbO(core.BaseAlgorithm):
     def __init__(self, context):
         self.context = context
         self.concepts = []
-        self._generate_from(core.Concept(extent=set(self.context.objs)), 0, {i:set() for i in self.context.attrs})
+        self._fast_generate_from(core.Concept(extent=set(self.context.objs)), 0, {i:set() for i in self.context.attrs})
 
-    def _generate_from(self, concept, y, N):
+    def _fast_generate_from(self, concept, y, N):
         if concept not in self.concepts:
             self.concepts.append(concept)
         q = queue.Queue()
         if concept.intent == set(self.context.attrs) or y > max(self.context.attrs):
             return
         for j in range(y, len(self.context.attrs)):
-            M = N[j]
             Yj = set(a for a in self.context.attrs if a < j)
-            if not j in concept.intent and (M.intersection(Yj)).issubset(concept.intent.intersection(Yj)):
+            if not j in concept.intent and (N[j].intersection(Yj)).issubset(concept.intent.intersection(Yj)):
                 C = concept.extent.intersection(self.context.attr_closure(j))
                 D = self.context.obj_closure(C)
                 new_concept = core.Concept(extent=C, intent=D)
                 if concept.intent.intersection(Yj) == new_concept.intent.intersection(Yj):
                     q.put((new_concept, j))
                 else:
-                    M = D
+                    N[j] = D
         while not q.empty():
             next_input = q.get()
-            self._generate_from(next_input[0], next_input[1] + 1, N)
+            self._fast_generate_from(next_input[0], next_input[1] + 1, N)
 
 
 if __name__ == '__main__':
