@@ -31,14 +31,14 @@ class InClose(core.BaseAlgorithm):
             if col in self.concepts[r].intent:
                 continue
             else:
-                if not self.concepts[self.rnew].extent.difference(context.attrs[col]):
+                if all(self.context.matrix[list(self.concepts[self.rnew].extent), col]):
                     return False
         return True
 
     def _in_close(self, r, y):
         self.rnew += 1
         self.concepts.append(core.Concept())
-        for j in range(y, len(self.context.attrs)):
+        for j in range(y, self.context.matrix.shape[1]):
             self.concepts[self.rnew].extent = set()
             for i in self.concepts[r].extent:
                 if self.context[i,j]:
@@ -61,7 +61,7 @@ class InCloseII(InClose):
     def _in_close(self, r, y):
         jchildren = list()
         rchildren = list()
-        for j in range(y, len(self.context.attrs)):
+        for j in range(y, self.context.matrix.shape[1]):
             if not j in self.concepts[r].intent:
                 self.concepts[self.rnew].extent = set()
                 for i in self.concepts[r].extent:
@@ -103,3 +103,5 @@ if __name__ == '__main__':
     assert not [c for c in expected if c not in concepts] and not [c for c in concepts if c not in expected]
     concepts = InCloseII(context)
     assert not [c for c in expected if c not in concepts] and not [c for c in concepts if c not in expected]
+
+

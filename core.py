@@ -35,12 +35,12 @@ class Context():
     def attr_closure(self, attrs):
         if isinstance(attrs, int):
             attrs = {attrs}
-        return set([x for x in c.objs if attrs.issubset(c.objs[x])])
+        return set([x for x in self.objs if attrs.issubset(self.objs[x])])
 
     def obj_closure(self, objs):
         if isinstance(objs, int):
             objs = {objs}
-        return set([x for x in c.attrs if objs.issubset(c.attrs[x])])
+        return set([x for x in self.attrs if objs.issubset(self.attrs[x])])
 
 
 class BaseAlgorithm(object):
